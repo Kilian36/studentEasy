@@ -1,11 +1,16 @@
 package com.example.studenteasy;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.view.View;
+import android.widget.CalendarView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,14 +26,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class MenuActivity extends AppCompatActivity {
 
-    private TextView helloTextView;
     JSONArray one_date_lessons;
-
+   //creo il calendario
+    private CalendarView n_c_v;
+    private String contenuto;
+    private TextView[] lezioni=new TextView[10];
+    //creo un oggetto Linear Layout
+    private LinearLayout lin;
+    private boolean ok=false;
 
 
     @Override
@@ -36,17 +49,37 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        //Carico il file con le informazioni su tutte le lezioni
         try {
-
-            String contenuto = loadfile();
-            one_date_lessons = takeObjects(contenuto, "2021-12-14");
-
-        } catch (FileNotFoundException | JSONException e) {
+            contenuto = loadfile();
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        //associo il calendario
+        n_c_v=(CalendarView) findViewById(R.id.calendarView);
+        //Creo il metodo che si attiva quando seleziono una data nel calendario
+        n_c_v.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                String data=take_string_from_int(year,month,dayOfMonth);
+                //adesso che ho ottenuto la stringa data chiamo la funzione takeObj
+                try {
+                    one_date_lessons=takeObjects(contenuto,data);
+                     ok=true;
+                    //voglio sapere quante lezioni ci sono oggi
+                    int N=one_date_lessons.length();
+                    //Ho bisogno di avere una view dinamica che mi scriva un numero di oggetti
+                    //chiamo il metodo che si occupa di settare le views
+                   //  setviews(N);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
+            }
+        });
 
     }
+
 
     public String loadfile() throws FileNotFoundException {
         String contents = "";
@@ -117,9 +150,7 @@ public class MenuActivity extends AppCompatActivity {
     }
 
 
-    public static Intent put_alarm() {
-        int hour = 8;
-        int minute = 0;
+    public static Intent put_alarm(String date,int hour,int minute) {
         //Creo un arraylist con i giorni della settimana in cui voglio che la sveglia sia messa
 
         final ArrayList<Integer> days = new ArrayList<>();
@@ -133,5 +164,37 @@ public class MenuActivity extends AppCompatActivity {
         intent.putExtra(AlarmClock.EXTRA_DAYS, days);
 
         return intent;
+    }
+    private String take_string_from_int(int year,int month,int day) {
+        //selezionata la data chiamo il metodo takeObj
+        //prima creo l'oggetto calendario
+        Calendar c = Calendar.getInstance();
+        c.set(year,month,day);
+        Date date=c.getTime();
+        @SuppressLint("SimpleDateFormat") DateFormat df=new SimpleDateFormat("yyyy-MM-dd");
+        //lo converto nella stringa data voluta
+        return df.format(date);
+    }
+
+   //Metodo set views da rivedere
+    @SuppressLint("SetTextI18n")
+    private void setviews(int N) throws JSONException {
+        if(N==0) {
+            lezioni[0].setText("Non ci sono lezioni per la data selezionata");
+            lin.addView(lezioni[0]);
+        }
+        else {
+            for (int i = 0; i < N; i++) {
+
+                //Estraggo le informazioni che mi servono dalla variabile globale
+                JSONObject lez_temp=one_date_lessons.getJSONObject(i);
+                String titolo=lez_temp.getString("title");
+                String prof=lez_temp.getString("docente");
+                String time=lez_temp.getString("time");
+                lezioni=new TextView[N];
+                lezioni[i].setText(titolo+ " Svolta dal professor   "+prof + "seguendo l'orario "+time);
+                lin.addView(lezioni[i]);
+            }
+        }
     }
 }
