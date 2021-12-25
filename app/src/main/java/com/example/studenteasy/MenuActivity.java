@@ -38,16 +38,23 @@ public class MenuActivity extends AppCompatActivity {
    //creo il calendario
     private CalendarView n_c_v;
     private String contenuto;
-    private TextView[] lezioni=new TextView[10];
     //creo un oggetto Linear Layout
     private LinearLayout lin;
     private boolean ok=false;
+    //al posto d fare array di text view faccio append e poi ripulisco
+    // la text view ogni volta che cambio giorno
+    TextView tv;
+    String data;
+    int time_start;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+        tv=(TextView) findViewById(R.id.textView);
+
 
         //Carico il file con le informazioni su tutte le lezioni
         try {
@@ -58,25 +65,37 @@ public class MenuActivity extends AppCompatActivity {
         //associo il calendario
         n_c_v=(CalendarView) findViewById(R.id.calendarView);
         //Creo il metodo che si attiva quando seleziono una data nel calendario
+
         n_c_v.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                String data=take_string_from_int(year,month,dayOfMonth);
+                 data=take_string_from_int(year,month,dayOfMonth);
+                int N;
                 //adesso che ho ottenuto la stringa data chiamo la funzione takeObj
                 try {
                     one_date_lessons=takeObjects(contenuto,data);
                      ok=true;
+
+
+                       JSONObject elemento=one_date_lessons.getJSONObject(0);
+                       String dato= elemento.getString("start");
+                       String start_time = dato.substring(11, 13);
+                       time_start = Integer.parseInt(start_time);
+                       //Toast.makeText(getApplicationContext(), start_time, Toast.LENGTH_SHORT).show();
+
                     //voglio sapere quante lezioni ci sono oggi
-                    int N=one_date_lessons.length();
-                    //Ho bisogno di avere una view dinamica che mi scriva un numero di oggetti
+                    N=one_date_lessons.length();
                     //chiamo il metodo che si occupa di settare le views
-                   //  setviews(N);
+                    setviews(N);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
             }
         });
+
+        put_alarm(data,time_start,00);
 
     }
 
@@ -124,8 +143,6 @@ public class MenuActivity extends AppCompatActivity {
 
             if (date.contentEquals(start)) {
 
-                //helloTextView.setText(title);
-
                 for (int j = 0; j < 4 && j <= Arr.length(); j++) {
 
                     Obj = Arr.getJSONObject(j + i);
@@ -141,8 +158,6 @@ public class MenuActivity extends AppCompatActivity {
             }
 
         }
-
-
         //Obj_selected è array oggetti json con tutte le lezioni di date
 
 
@@ -151,12 +166,10 @@ public class MenuActivity extends AppCompatActivity {
 
 
     public static Intent put_alarm(String date,int hour,int minute) {
-        //Creo un arraylist con i giorni della settimana in cui voglio che la sveglia sia messa
 
+        //Creo un arraylist con i giorni della settimana in cui voglio che la sveglia sia messa
         final ArrayList<Integer> days = new ArrayList<>();
         days.add(Calendar.DATE);
-        days.add(Calendar.DATE + 1);
-        days.add(Calendar.DATE + 2);
 
         Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
         intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
@@ -179,11 +192,12 @@ public class MenuActivity extends AppCompatActivity {
    //Metodo set views da rivedere
     @SuppressLint("SetTextI18n")
     private void setviews(int N) throws JSONException {
+        tv.setText(" ");
         if(N==0) {
-            lezioni[0].setText("Non ci sono lezioni per la data selezionata");
-            lin.addView(lezioni[0]);
+            tv.setText("Non ci sono lezioni per la data selezionata");
         }
         else {
+            //lezioni=new TextView[N];
             for (int i = 0; i < N; i++) {
 
                 //Estraggo le informazioni che mi servono dalla variabile globale
@@ -191,9 +205,8 @@ public class MenuActivity extends AppCompatActivity {
                 String titolo=lez_temp.getString("title");
                 String prof=lez_temp.getString("docente");
                 String time=lez_temp.getString("time");
-                lezioni=new TextView[N];
-                lezioni[i].setText(titolo+ " Svolta dal professor   "+prof + "seguendo l'orario "+time);
-                lin.addView(lezioni[i]);
+
+                tv.append(titolo+ " Svolta dal professor   "+prof + " seguendo l'orario "+time+"\n");
             }
         }
     }
