@@ -7,4 +7,6 @@
         <item>FILOSOFIA</item>
 
     </string-array>
+    <string name="Alarm">Sveglia per domani</string>
+    <string name="Start">Iniziamo</string>
 </resources>
