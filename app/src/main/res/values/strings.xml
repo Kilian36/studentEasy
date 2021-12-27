@@ -9,4 +9,5 @@
     </string-array>
     <string name="Alarm">Sveglia per domani</string>
     <string name="Start">Iniziamo</string>
+    <string name="benvenuto">Benvenuto in student easy, secgli la tua università</string>
 </resources>
