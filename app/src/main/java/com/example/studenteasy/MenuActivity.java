@@ -99,7 +99,6 @@ public class MenuActivity extends AppCompatActivity {
 
     }
 
-
     public String loadfile() throws FileNotFoundException {
 
         /*
@@ -126,7 +125,6 @@ public class MenuActivity extends AppCompatActivity {
         }
         return contents;
     }
-
 
     JSONArray takeObjects(String contenuto, String date) throws JSONException {
         /*prende input data (In formato yyyy-MM-dd) e stringa json completa
@@ -206,6 +204,7 @@ public class MenuActivity extends AppCompatActivity {
         alarm.putExtra(AlarmClock.EXTRA_MINUTES, minute);
         startActivity(alarm);
     }
+
     private String take_string_from_int(int year,int month,int day) {
         //selezionata la data chiamo il metodo takeObj
         //prima creo l'oggetto calendario
@@ -217,12 +216,9 @@ public class MenuActivity extends AppCompatActivity {
         return df.format(date);
     }
 
-   //Metodo set views da rivedere
-    @SuppressLint("SetTextI18n")
     private void setviews(int N) throws JSONException {
-        tv.setText(" ");
         if(N==0) {
-            tv.setText("Non ci sono lezioni per la data selezionata");
+            tv.append("Non ci sono lezioni per la data selezionata");
         }
         else {
             for (int i = 0; i < N; i++) {
@@ -233,8 +229,15 @@ public class MenuActivity extends AppCompatActivity {
                 String titolo=lez_temp.getString("title");
                 String prof=lez_temp.getString("docente");
                 String time=lez_temp.getString("time");
-                tv.append(titolo+ " Svolta dal professor   "+prof + " seguendo l'orario "+time+"\n");
+                tv.append(titolo+"\n"+prof +"\n"+time+"\n");
             }
         }
+    }
+
+    public void go_back(View view){
+        //Creo un intent esplicito che mi faccia ritornare direttamente nella prima activity
+        Intent come_back=new Intent(this,MainActivity.class);
+        come_back.putExtra("Test",false);
+        startActivity(come_back);
     }
 }

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,10 +28,27 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     String url = "";
 
+    boolean check;
+    SharedPreferences sp;
+    public final String key="CHECK";
+    public static final String MyPREFERENCES = "MyPrefs" ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sp= getSharedPreferences(MyPREFERENCES,MODE_PRIVATE);
+
+       /*SISTEMA DI CONTROLLO
+       Controllo se mi trovo in questa activity perchè ho premuto il tasto di aggiornamento
+       dal menù e se il check del salvataggio file è ancora ok
+        */
+        Intent back=getIntent();
+        Boolean check2=back.getBooleanExtra("Test",true);
+        //Controllo se esiste già il file salvato
+        check=sp.getBoolean(key,false);
+        //Se esiste va direttamente al menù
+        if(check&&check2)
+            start();
         Spinner spinner = findViewById(R.id.spinner1);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.courses,
@@ -90,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     public void onResponse(String response) {
 
                         try {
-
+                        //Salvo in un file il contenuto json
                             saveJson(response);
-
+                            setPref();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -117,6 +135,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
         outputStream.write(http.getBytes());
         outputStream.close();
+
+
     }
 
     public void errorVolley() {
@@ -126,6 +146,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void start()  {
         Intent intent=new Intent(this,MenuActivity.class);
         startActivity(intent);
+    }
+
+    public void setPref() {
+        /*
+        Appena il file viene salvato setto questo boolean "true", in questo modo dalla volta successiva
+        la prima activity verra del tutto saltata in quanto i dati saranno gia salvati.
+        */
+
+        SharedPreferences.Editor ed=sp.edit();
+        ed.putBoolean(key,true);
+        ed.apply();
     }
 
 }
