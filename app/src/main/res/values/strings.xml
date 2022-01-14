@@ -1,14 +1,15 @@
 <resources>
     <string name="app_name">studentEasy</string>
     <string-array name="courses">
-
+        <item>Seleziona una facolta</item>
         <item>INGEGNERIA</item>
         <item>MEDICINA</item>
         <item>FILOSOFIA</item>
 
     </string-array>
-    <string name="Alarm">Sveglia per domani</string>
+    <string name="Alarm">Sveglia domani</string>
     <string name="Start">Iniziamo</string>
     <string name="benvenuto">Benvenuto nella nostra App</string>
     <string name="ritorno">Aggiorna</string>
+    <string name="link">Link Teams</string>
 </resources>

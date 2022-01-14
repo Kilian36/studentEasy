@@ -6,8 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
@@ -56,7 +58,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
         tv=(TextView) findViewById(R.id.textView);
-
+        tv.setMovementMethod(new ScrollingMovementMethod());
 
         /*Carico il file con il Json array in una stringa che ho definito come variabile globale
         Cosi posso accederla da ogni metodo
@@ -91,7 +93,7 @@ public class MenuActivity extends AppCompatActivity {
                     //chiamo il metodo che si occupa di settare la view con le informazioni utili
                     setviews(N);
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    tv.setText("Non ci sono lezioni nella data che hai selezionato");
                 }
 
             }
@@ -172,6 +174,7 @@ public class MenuActivity extends AppCompatActivity {
         controlla l'orario quando c'è e mette una sveglia due ore prima
         */
         Calendar calendar=Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
         int year=calendar.get(Calendar.YEAR);
         int month=calendar.get(Calendar.MONTH);
         int day=calendar.get(Calendar.DAY_OF_MONTH);
@@ -188,7 +191,6 @@ public class MenuActivity extends AppCompatActivity {
             JSONObject first = tomorrow_array.getJSONObject(0);
             String ora_inizio= first.getString("time").substring(0,2);
             String minuto_inizio= first.getString("time").substring(3,5);
-            Toast.makeText(this, ora_inizio, Toast.LENGTH_SHORT).show();
             int ora=Integer.parseInt(ora_inizio);
             int minuti=Integer.parseInt(minuto_inizio);
             put_alarm(ora-2,minuti);
@@ -217,10 +219,7 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     private void setviews(int N) throws JSONException {
-        if(N==0) {
-            tv.append("Non ci sono lezioni per la data selezionata");
-        }
-        else {
+        tv.setText("");
             for (int i = 0; i < N; i++) {
                 /*Estraggo le informazioni che voglio mostrare dalla variabile globale
                 che contiene le lezioni nel giorno specifico
@@ -229,8 +228,8 @@ public class MenuActivity extends AppCompatActivity {
                 String titolo=lez_temp.getString("title");
                 String prof=lez_temp.getString("docente");
                 String time=lez_temp.getString("time");
+                tv.setPadding(16,2,16,2);
                 tv.append(titolo+"\n"+prof +"\n"+time+"\n");
-            }
         }
     }
 
@@ -239,5 +238,44 @@ public class MenuActivity extends AppCompatActivity {
         Intent come_back=new Intent(this,MainActivity.class);
         come_back.putExtra("Test",false);
         startActivity(come_back);
+    }
+
+    public void openTeams(View view) throws JSONException {
+        Calendar calendar = Calendar.getInstance();
+        String teams = "";
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        String date = take_string_from_int(year, month, day);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+
+
+        JSONArray today_array = takeObjects(contenuto, date);
+        boolean ok=false;
+        if (today_array.length() == 0)
+            Toast.makeText(this, "Non hai lezioni oggi, buon riposo", Toast.LENGTH_SHORT).show();
+        else {
+            for (int i = 0; i < today_array.length(); i++) {
+                JSONObject obj = today_array.getJSONObject(i);
+                String timeless = obj.getString("time");
+
+                timeless = timeless.substring(8,10);
+                int sec_or = Integer.parseInt(timeless);
+                if (hour < sec_or) {
+                    teams = obj.getString("teams");
+                    startact(teams);
+                    ok=true;
+
+                }
+                if(ok) break;
+            }
+            if (!ok) Toast.makeText(this, "Hai finito le lezioni di oggi", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void startact(String s) {
+        Intent intent=new Intent(Intent.ACTION_VIEW, Uri.parse(s));
+        startActivity(intent);
     }
 }

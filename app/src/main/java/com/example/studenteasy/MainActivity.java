@@ -47,8 +47,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //Controllo se esiste già il file salvato
         check=sp.getBoolean(key,false);
         //Se esiste va direttamente al menù
-        if(check&&check2)
-            start();
+        if(check&&check2) {
+          //Va nella seconda activity
+            start(); }
+        //Gestione della selezione Spinner
         Spinner spinner = findViewById(R.id.spinner1);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.courses,
@@ -63,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String text = parent.getItemAtPosition(position).toString();
+        if(!text.equals("Seleziona una facolta"))
         url=getUrl(text);
-
 
     }
 
@@ -151,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void setPref() {
         /*
         Appena il file viene salvato setto questo boolean "true", in questo modo dalla volta successiva
-        la prima activity verra del tutto saltata in quanto i dati saranno gia salvati.
+        la prima activity verrà del tutto saltata in quanto i dati saranno gia salvati.
         */
 
         SharedPreferences.Editor ed=sp.edit();
